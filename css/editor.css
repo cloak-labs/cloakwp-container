@@ -1,0 +1,24 @@
+/**
+ * Gutenberg iframe-preview tweaks for @cloakui/container.
+ * Apply when the frontend preview runs inside the block editor.
+ */
+
+.gutenberg-preview {
+  /* Align with core blocks (no scrollbar in the iframe chrome) */
+  --scrollbar-w: 0px;
+  --100vw: calc(100vw - var(--sidebar-w) - var(--scrollbar-w));
+  display: flex;
+  flex-direction: column;
+}
+
+.gutenberg-preview .cntr-wide,
+.gutenberg-preview .cntr {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.gutenberg-preview .cntr-full .cntr-wide,
+.gutenberg-preview .cntr-full .cntr {
+  padding-left: var(--cntr-padding) !important;
+  padding-right: var(--cntr-padding) !important;
+}

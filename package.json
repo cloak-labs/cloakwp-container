@@ -1,0 +1,68 @@
+{
+  "name": "@cloakwp/container",
+  "version": "0.1.0",
+  "description": "WordPress / CloakWP integration for @cloakui/container — block renderer plugin, align mapping, and editor sync helpers.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./editor.css": "./css/editor.css",
+    "./theme-json": {
+      "types": "./dist/themeJson.d.ts",
+      "import": "./dist/themeJson.js",
+      "default": "./dist/themeJson.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build",
+    "clean": "rm -rf .turbo && rm -rf dist && npm run clean:modules",
+    "clean:modules": "rm -rf node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloak-labs/cloakwp-container.git"
+  },
+  "keywords": [
+    "cloakwp",
+    "wordpress",
+    "gutenberg",
+    "container",
+    "align",
+    "blocks"
+  ],
+  "author": "Kaelan Smith",
+  "license": "LGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/cloak-labs/cloakwp-container/issues"
+  },
+  "homepage": "https://github.com/cloak-labs/cloakwp-container#readme",
+  "dependencies": {
+    "@cloakui/container": "workspace:*",
+    "@kaelan/deep-merge-ts": "^0.0.1"
+  },
+  "peerDependencies": {
+    "cloakwp": ">=0.6.0",
+    "tailwindcss": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^18.18.1",
+    "cloakwp": "workspace:*",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.3.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
