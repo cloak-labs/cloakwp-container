@@ -18,8 +18,14 @@ export {
   getContainerWidthExpr,
   type GetContainerWidthExprOptions,
 } from "./getContainerWidthExpr";
-export { containerThemeJsonLayout } from "./themeJson";
 export {
+  containerThemeJsonLayout,
+  createContainerThemeJsonLayout,
+  type ContainerThemeJsonLayoutOptions,
+} from "./themeJson";
+export {
+  createWpAlignContainerRules,
   createWpEditorContainerPlugin,
   wpAlignContainerRules,
+  type WpAlignContainerRulesOptions,
 } from "./editorTailwindPlugin";
