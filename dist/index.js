@@ -1,5 +1,12 @@
 export { blockContainerPlugin, } from "./blockContainerPlugin";
-export { alignToContainerSize, defaultAlignSizeMap, getCntrClass, resolveBlockContainerAlign, } from "./align";
+export { alignToContainerSize, defaultAlignFlushSize, defaultAlignSizeMap, getCntrClass, resolveBlockContainerAlign, } from "./align";
 export { getContainerWidthExpr, } from "./getContainerWidthExpr";
+export { getLayoutSlotImageSizes, } from "./getLayoutSlotImageSizes";
+export { ROOT_LAYOUT_SLOT, bindLayoutSlot, getLayoutSlot, layoutSlotContentWidthAt, } from "./layoutSlot";
+export { isHorizontalFlexLayout, parseFlexSizeFraction, resolveFlexItemWidthFraction, withFlexItemWidthFraction, } from "./flexItem";
+export { getColumnWidths, getColumnsLayout } from "./columnsLayout";
+export { applyColumnLayoutSlot, applyCoreBlockLayoutSlot, applyFlexItemLayoutSlot, columnFractionByBreakpoint, } from "./coreBlockLayoutSlot";
+export { composeLayoutSlot } from "./composeLayoutSlot";
+export { resolveBlockContainerDecision, } from "./resolveBlockContainerDecision";
 export { containerThemeJsonLayout, createContainerThemeJsonLayout, } from "./themeJson";
 export { createWpAlignContainerRules, createWpEditorContainerPlugin, wpAlignContainerRules, } from "./editorTailwindPlugin";

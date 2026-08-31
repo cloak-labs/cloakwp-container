@@ -3,30 +3,37 @@ import {
   type BlockRendererPlugin,
   type BlockRendererConfig,
   type BlockDataWithExtraContext,
-  type RenderPreparedBlock,
-} from "cloakwp/cms";
+  type RenderOptions,
+} from "cloakwp/blocks";
+import { composeLayoutSlot } from "./composeLayoutSlot";
+import {
+  type ContainerMeta,
+  type ContainerSize,
+  type ContainerStrategy,
+} from "./containerTypes";
+import { applyCoreBlockLayoutSlot } from "./coreBlockLayoutSlot";
+import { ROOT_LAYOUT_SLOT, type LayoutSlot } from "./layoutSlot";
+import {
+  resolveBlockContainerDecision,
+  type BlockContainerDecision,
+} from "./resolveBlockContainerDecision";
 
-export type ContainerStrategy = "inject" | "wrap" | "none";
-export type ContainerSize = string;
-export type ContainerMeta = {
-  container?: {
-    strategy?:
-      | ContainerStrategy
-      | ((props: {
-          block: BlockDataWithExtraContext;
-          props: Record<string, any>;
-        }) => ContainerStrategy);
-    size?:
-      | ContainerSize
-      | ((props: {
-          block: BlockDataWithExtraContext;
-          props: Record<string, any>;
-        }) => ContainerSize);
-  };
+export type { ContainerMeta, ContainerSize, ContainerStrategy };
+
+export type ComposeLayoutSlotFilterContext = {
+  block: BlockDataWithExtraContext;
+  props: Record<string, any>;
+  decision: BlockContainerDecision;
+  parentSlot: LayoutSlot;
 };
 
+export type ComposeLayoutSlotFilter = (
+  slot: LayoutSlot,
+  context: ComposeLayoutSlotFilterContext,
+) => LayoutSlot;
+
 type ContainerPluginConfig<
-  TComponent extends (props: any) => any = (props: any) => any
+  TComponent extends (props: any) => any = (props: any) => any,
 > = {
   /** The component to use for the "wrap" container strategy. */
   wrapperComponent: TComponent;
@@ -38,7 +45,7 @@ type ContainerPluginConfig<
     defaultProps: Record<string, any>,
     context: {
       size: ContainerSize;
-    }
+    },
   ) => Record<string, any>;
   /** Framework children prop name. Defaults to "children". */
   childrenProp?: string;
@@ -57,15 +64,20 @@ type ContainerPluginConfig<
         context: {
           block: BlockDataWithExtraContext;
           props: Record<string, any>;
-        }
+        },
       ) => ContainerStrategy;
       containerSize?: (
         defaultSize: ContainerSize,
         context: {
           block: BlockDataWithExtraContext;
           props: Record<string, any>;
-        }
+        },
       ) => ContainerSize;
+      /**
+       * Runs after measure composition on nested descent. Use to apply column
+       * fractions or other subdivision of the ancestor layout slot.
+       */
+      composeLayoutSlot?: ComposeLayoutSlotFilter;
     };
   };
 };
@@ -73,9 +85,9 @@ type ContainerPluginConfig<
 export const blockContainerPlugin = <
   TComponent extends (props: any) => any = (props: any) => any,
   TRenderOutput = any,
-  TBlockData extends Record<string, any> = Record<string, any>
+  TBlockData extends Record<string, any> = Record<string, any>,
 >(
-  pluginConfig: ContainerPluginConfig<TComponent>
+  pluginConfig: ContainerPluginConfig<TComponent>,
 ): BlockRendererPlugin<TComponent, TRenderOutput, TBlockData> => {
   const {
     wrapperComponent,
@@ -87,66 +99,82 @@ export const blockContainerPlugin = <
     hooks = {},
   } = pluginConfig;
 
-  const resolveStrategy = (
-    component: RenderPreparedBlock<
-      TComponent,
-      Record<string, any>,
-      Record<string, any>
-    >
-  ): ContainerStrategy => {
-    const blockCntr = component.block.meta
-      ?.container as ContainerMeta["container"];
-
-    const strategy =
-      typeof blockCntr?.strategy === "function"
-        ? blockCntr.strategy({ block: component.block, props: component.props })
-        : blockCntr?.strategy;
-
-    return (
-      hooks?.filters?.containerStrategy?.(strategy, {
-        block: component.block,
-        props: component.props,
-      }) ?? strategy
-    );
+  const decisionOptions = {
+    defaultStrategy,
+    defaultSize,
+    filters: hooks.filters,
   };
 
-  const resolveSize = (
-    component: RenderPreparedBlock<
-      TComponent,
-      Record<string, any>,
-      Record<string, any>
-    >
-  ): ContainerSize => {
-    const blockCntr = component.block.meta
-      ?.container as ContainerMeta["container"];
+  const resolveDecision = (
+    block: BlockDataWithExtraContext,
+    props: Record<string, any> = {},
+  ) => resolveBlockContainerDecision(block, props, decisionOptions);
 
-    const size =
-      typeof blockCntr?.size === "function"
-        ? blockCntr.size({ block: component.block, props: component.props })
-        : blockCntr?.size;
-
-    return (
-      hooks?.filters?.containerSize?.(size, {
-        block: component.block,
-        props: component.props,
-      }) ?? size
-    );
-  };
+  const composeSlotFilter: ComposeLayoutSlotFilter =
+    hooks.filters?.composeLayoutSlot ?? applyCoreBlockLayoutSlot;
 
   return (
     userConfig: BlockRendererConfig<TComponent, TRenderOutput, TBlockData>,
-    { executionCount, processedBlocks }
+    { executionCount, processedBlocks },
   ): BlockRendererConfig<TComponent, TRenderOutput, TBlockData> => {
     const originalRenderBlock = userConfig.renderBlock;
     const originalCombineBlocks = userConfig.combineBlocks;
+    const previousNestedRenderOptions =
+      userConfig.hooks?.filters?.nestedRenderOptions ??
+      ((options: RenderOptions<TBlockData>) => options);
+
+    const nestedRenderOptions = (
+      options: RenderOptions<TBlockData>,
+      ctx: {
+        parent: BlockDataWithExtraContext<Partial<TBlockData>>;
+        props: Record<string, any>;
+      },
+    ): RenderOptions<TBlockData> => {
+      const next = previousNestedRenderOptions(options, ctx);
+      const parentFromAncestors = ctx.parent.context?.fromAncestors ?? {};
+      const parentSlot = (parentFromAncestors.layoutSlot ??
+        ROOT_LAYOUT_SLOT) as LayoutSlot;
+      const decision = resolveDecision(ctx.parent, ctx.props);
+      const measured = composeLayoutSlot(parentSlot, ctx.parent, decision);
+      const layoutSlot = composeSlotFilter(measured, {
+        block: ctx.parent,
+        props: ctx.props,
+        decision,
+        parentSlot,
+      });
+
+      // Threaded separately from `context.parent` — that link is only one
+      // hop deep, so a walk cannot see `core/column` two+ levels up.
+      const insideCoreColumn =
+        ctx.parent.name === "core/column" ||
+        parentFromAncestors.insideCoreColumn === true;
+
+      return {
+        ...next,
+        fromAncestors: {
+          ...next.fromAncestors,
+          layoutSlot,
+          insideCoreColumn,
+        },
+      };
+    };
 
     const firstExecutionConfigOverrides: Partial<
       BlockRendererConfig<TComponent, TRenderOutput, TBlockData>
     > =
       executionCount === 1
         ? {
+            hooks: {
+              filters: {
+                ...userConfig.hooks?.filters,
+                nestedRenderOptions,
+              },
+            },
             renderBlock: (component, options, renderer) => {
-              const strategy = resolveStrategy(component);
+              const { strategy, size } = resolveDecision(
+                component.block,
+                component.props,
+              );
 
               if (strategy === "none") {
                 return originalRenderBlock(component, options, renderer);
@@ -158,25 +186,23 @@ export const blockContainerPlugin = <
                     ...component,
                     props: {
                       ...component.props,
-                      ...getContainerProps(component.props, {
-                        size: resolveSize(component),
-                      }),
+                      ...getContainerProps(component.props, { size }),
                     },
                   },
                   options,
-                  renderer
+                  renderer,
                 );
               }
 
               if (strategy === "wrap" && !groupWrap) {
                 const { index, parent } = component.block.context;
                 return wrapperComponent({
-                  ...getContainerProps({}, { size: resolveSize(component) }),
+                  ...getContainerProps({}, { size }),
                   key: parent ? `${parent.context.index}_${index}` : index,
                   [childrenProp]: originalRenderBlock(
                     component,
                     options,
-                    renderer
+                    renderer,
                   ),
                 });
               }
@@ -190,7 +216,7 @@ export const blockContainerPlugin = <
                   renderedBlocks,
                   components,
                   options,
-                  renderer
+                  renderer,
                 );
               }
 
@@ -205,7 +231,7 @@ export const blockContainerPlugin = <
                       ...getContainerProps({}, { size: currentGroup.size }),
                       key: `group-${numGroups}`,
                       [childrenProp]: currentGroup.blocks,
-                    })
+                    }),
                   );
 
                   numGroups++;
@@ -215,7 +241,10 @@ export const blockContainerPlugin = <
 
               components.forEach((component, i) => {
                 const renderedBlock = renderedBlocks[i];
-                const strategy = resolveStrategy(component);
+                const { strategy, size } = resolveDecision(
+                  component.block,
+                  component.props,
+                );
 
                 if (strategy !== "wrap") {
                   addCurrentGroup();
@@ -223,7 +252,6 @@ export const blockContainerPlugin = <
                   return;
                 }
 
-                const size = resolveSize(component);
                 if (!currentGroup || currentGroup.size !== size) {
                   addCurrentGroup();
                   currentGroup = { size, blocks: [renderedBlock] };
@@ -238,7 +266,7 @@ export const blockContainerPlugin = <
                 blocksWithGroupedWrappers,
                 components,
                 options,
-                renderer
+                renderer,
               );
             },
           }
@@ -269,9 +297,12 @@ export const blockContainerPlugin = <
           },
         };
       },
-      {}
+      {},
     );
 
-    return deepMerge(userConfig, { ...firstExecutionConfigOverrides, blocks });
+    return deepMerge(userConfig, {
+      ...firstExecutionConfigOverrides,
+      blocks,
+    });
   };
 };

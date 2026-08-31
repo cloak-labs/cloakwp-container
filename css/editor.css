@@ -1,6 +1,6 @@
 /**
  * Gutenberg iframe-preview tweaks for @cloakui/container.
- * Apply when the frontend preview runs inside the block editor.
+ * Apply .gutenberg-preview to document.body when the frontend preview runs inside the block editor via iframe.
  */
 
 .gutenberg-preview {
@@ -11,8 +11,8 @@
   flex-direction: column;
 }
 
-.gutenberg-preview .cntr-wide,
-.gutenberg-preview .cntr {
+.gutenberg-preview #root > .cntr-wide,
+.gutenberg-preview #root > .cntr {
   padding-inline: 0 !important;
 }
 

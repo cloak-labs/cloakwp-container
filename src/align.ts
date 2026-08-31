@@ -1,4 +1,5 @@
 import {
+  alignClassName,
   builtinClassMap,
   containerClassMap,
   measureClassName,
@@ -9,6 +10,9 @@ import {
 /**
  * Default WP `align` attribute → container size name.
  * Override via `alignSizeMap` on helpers when projects use different names.
+ *
+ * `left` / `right` are semantic tokens resolved by `getCntrClass` into
+ * `cntr align-start-{flush}` / `cntr align-end-{flush}` (not measure sizes).
  */
 export const defaultAlignSizeMap: Record<string, string> = {
   wide: "wide",
@@ -19,10 +23,22 @@ export const defaultAlignSizeMap: Record<string, string> = {
   none: "none",
 };
 
+/** Default size whose gutter `alignleft` / `alignright` flush to. */
+export const defaultAlignFlushSize = "wide";
+
 export type AlignToSizeOptions = {
   fallback?: ContainerSizeName | string;
   /** Maps align tokens (e.g. `alignwide` / `wide`) to size names. */
   alignSizeMap?: Record<string, string>;
+};
+
+export type GetCntrClassOptions = {
+  /**
+   * Size whose gutter `left` / `right` flush to via `align-start-*` /
+   * `align-end-*`. Ignored for other sizes.
+   * @default "wide"
+   */
+  alignFlushSize?: string;
 };
 
 /**
@@ -55,10 +71,18 @@ export const alignToContainerSize = (
   if (classList.includes("alignfull") || classList.includes("cntr-full")) {
     return alignSizeMap.full ?? "full";
   }
-  if (classList.includes("alignleft") || classList.includes("cntr-start")) {
+  if (
+    classList.includes("alignleft") ||
+    classList.includes("cntr-start") ||
+    classList.some((c) => c === "align-start" || c.startsWith("align-start-"))
+  ) {
     return alignSizeMap.left ?? "left";
   }
-  if (classList.includes("alignright") || classList.includes("cntr-end")) {
+  if (
+    classList.includes("alignright") ||
+    classList.includes("cntr-end") ||
+    classList.some((c) => c === "align-end" || c.startsWith("align-end-"))
+  ) {
     return alignSizeMap.right ?? "right";
   }
 
@@ -68,11 +92,24 @@ export const alignToContainerSize = (
 /**
  * Resolve a CSS class for a container size. Prefers a project `container`
  * instance when provided; otherwise falls back to builtins + `cntr-{name}`.
+ *
+ * Semantic `left` / `right` become compositional flush classes:
+ * `cntr align-start-wide` / `cntr align-end-wide` by default.
  */
 export const getCntrClass = (
   size?: ContainerSizeName | string | null,
   container?: Pick<ContainerInstance, "className">,
+  options?: GetCntrClassOptions,
 ): string => {
+  const flush = options?.alignFlushSize ?? defaultAlignFlushSize;
+
+  if (size === "left") {
+    return `cntr ${alignClassName("start", flush)}`;
+  }
+  if (size === "right") {
+    return `cntr ${alignClassName("end", flush)}`;
+  }
+
   if (container) return container.className(size);
   if (size == null || size === "") return builtinClassMap.default;
   if (size in builtinClassMap) {

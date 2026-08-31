@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build",
+    "test": "npm run build && node --import tsx --test src/layoutSlot.test.ts",
     "clean": "rm -rf .turbo && rm -rf dist && npm run clean:modules",
     "clean:modules": "rm -rf node_modules"
   },
@@ -45,6 +45,8 @@
   "homepage": "https://github.com/cloak-labs/cloakwp-container#readme",
   "dependencies": {
     "@cloakui/container": "workspace:*",
+    "@cloakui/responsive": "workspace:*",
+    "@cloakui/utils": "workspace:*",
     "@kaelan/deep-merge-ts": "^0.0.1"
   },
   "peerDependencies": {
@@ -60,6 +62,7 @@
     "@types/node": "^18.18.1",
     "cloakwp": "workspace:*",
     "tailwindcss": "^3.4.4",
+    "tsx": "^4.23.5",
     "typescript": "^5.3.2"
   },
   "publishConfig": {
