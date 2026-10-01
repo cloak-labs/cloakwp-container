@@ -11,6 +11,13 @@
   flex-direction: column;
 }
 
+/* The preview shell starts in a short iframe. Don't let that flex column
+   squash #root down to the placeholder, or height reports stay at 150px. */
+.gutenberg-preview #root {
+  flex: 0 0 auto;
+  height: auto;
+}
+
 .gutenberg-preview #root > .cntr-wide,
 .gutenberg-preview #root > .cntr {
   padding-inline: 0 !important;
