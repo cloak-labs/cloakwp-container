@@ -41,11 +41,11 @@ class = "cntr align-start-wide"   (flush to the wide band; override via alignFlu
 
 When pairing with [`@cloakui/block-renderer`](https://github.com/cloak-labs/cloakui-block-renderer), each block can declare (via `meta.container` in each block config object) how measure classes are applied:
 
-| Strategy | Behavior |
-|----------|----------|
-| `inject` (default) | Merge container props (usually `className`) onto the block component itself |
-| `wrap` | Render a wrapper around the block; consecutive same-size wraps are grouped when `groupWrap` is on |
-| `none` | Skip visual containers for this block |
+| Strategy           | Behavior                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `inject` (default) | Merge container props (usually `className`) onto the block component itself                       |
+| `wrap`             | Render a wrapper around the block; consecutive same-size wraps are grouped when `groupWrap` is on |
+| `none`             | Skip visual containers for this block                                                             |
 
 `strategy` and `size` may be static values or functions of `{ block, props }`. Plugin-level filters (`containerStrategy`, `containerSize`) run after meta resolution and are the usual place to map WP `align` → size.
 
@@ -92,20 +92,20 @@ Those pieces live here: `createWpEditorContainerPlugin`, `containerThemeJsonLayo
 pnpm add @cloakui/container @cloakwp/container
 ```
 
-| Peer | Required? | Used by |
-|------|-----------|---------|
+| Peer                | Required?                  | Used by                                     |
+| ------------------- | -------------------------- | ------------------------------------------- |
 | `cloakwp` `>=0.6.0` | For `blockContainerPlugin` | Block renderer plugin + layout-slot descent |
-| `tailwindcss` `>=3` | Optional | `createWpEditorContainerPlugin` |
+| `tailwindcss` `>=3` | Optional                   | `createWpEditorContainerPlugin`             |
 
 Align helpers, theme.json, layout-slot math, and `getContainerWidthExpr` work without the CloakWP peer. The editor Tailwind plugin needs `tailwindcss`.
 
 **Exports:**
 
-| Import path | Contents |
-|-------------|----------|
-| `@cloakwp/container` | All JS/TS APIs |
+| Import path                     | Contents                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `@cloakwp/container`            | All JS/TS APIs                                                                                          |
 | `@cloakwp/container/theme-json` | `containerThemeJsonLayout` / `createContainerThemeJsonLayout` only (handy for Node theme build scripts) |
-| `@cloakwp/container/editor.css` | Gutenberg block preview iframe CSS overrides |
+| `@cloakwp/container/editor.css` | Gutenberg block preview iframe CSS overrides                                                            |
 
 ## Quick start
 
@@ -328,29 +328,30 @@ createWpAlignContainerRules({
 
 ```ts
 type LayoutSlot = {
-  measureSize: string;              // "default" | "wide" | "full" | …
-  subtractPad: boolean;             // contentBoxWidth vs width()
-  padApplied: boolean;              // an ancestor already established a measure
-  fractionByBreakpoint: {           // share of parent (1 = full)
+  measureSize: string; // "default" | "wide" | "full" | …
+  subtractPad: boolean; // contentBoxWidth vs width()
+  padApplied: boolean; // an ancestor already established a measure
+  fractionByBreakpoint: {
+    // share of parent (1 = full)
     mobile?: number;
     tablet?: number;
     // …
   };
-  clampSlot?: LayoutSlot;           // ceiling from a tighter ancestor
+  clampSlot?: LayoutSlot; // ceiling from a tighter ancestor
 };
 ```
 
 ### Composition rules
 
-| Situation | Result |
-|-----------|--------|
-| Parent `inject`/`wrap` with size `default`/`wide` | Child slot gets that measure; first measure subtracts pad |
-| Nested measure inside a padded/fractioned ancestor | Inner pad collapsed (`subtractPad: false`); width clamped via `clampSlot` |
-| Nested `full` inside a padded or fractioned slot | Keeps the ancestor measure (`.cntr-full` is `width: 100%`, not a viewport breakout) |
-| Root-level `full` | Viewport-full slot |
-| `strategy: "none"` | Slot passes through unchanged (subdivision filters may still run) |
-| `core/column` (default filter) | Multiplies `fractionByBreakpoint` by the column's share of the row |
-| Horizontal flex item with `flexSize: "50%"` | Multiplies fraction by `0.5` (px/rem/`fit-content` ignored) |
+| Situation                                          | Result                                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Parent `inject`/`wrap` with size `default`/`wide`  | Child slot gets that measure; first measure subtracts pad                           |
+| Nested measure inside a padded/fractioned ancestor | Inner pad collapsed (`subtractPad: false`); width clamped via `clampSlot`           |
+| Nested `full` inside a padded or fractioned slot   | Keeps the ancestor measure (`.cntr-full` is `width: 100%`, not a viewport breakout) |
+| Root-level `full`                                  | Viewport-full slot                                                                  |
+| `strategy: "none"`                                 | Slot passes through unchanged (subdivision filters may still run)                   |
+| `core/column` (default filter)                     | Multiplies `fractionByBreakpoint` by the column's share of the row                  |
+| Horizontal flex item with `flexSize: "50%"`        | Multiplies fraction by `0.5` (px/rem/`fit-content` ignored)                         |
 
 ### Custom subdivision
 
@@ -403,53 +404,53 @@ getContainerWidthExpr(align, "desktop", container);
 
 ### Align & classes
 
-| Export | Role |
-|--------|------|
-| `alignToContainerSize(align, className?, fallbackOrOptions?)` | WP align / legacy class → size name |
-| `defaultAlignSizeMap` | Default align → size map (`wide`→`wide`, `left`→`left`, …) |
-| `defaultAlignFlushSize` | `"wide"` — size `left`/`right` flush to |
-| `getCntrClass(size, container?, options?)` | Size name → CSS class (`left`/`right` → flush classes) |
-| `resolveBlockContainerAlign(block, options?)` | Walk parents while align is `full` |
+| Export                                                        | Role                                                       |
+| ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `alignToContainerSize(align, className?, fallbackOrOptions?)` | WP align / legacy class → size name                        |
+| `defaultAlignSizeMap`                                         | Default align → size map (`wide`→`wide`, `left`→`left`, …) |
+| `defaultAlignFlushSize`                                       | `"wide"` — size `left`/`right` flush to                    |
+| `getCntrClass(size, container?, options?)`                    | Size name → CSS class (`left`/`right` → flush classes)     |
+| `resolveBlockContainerAlign(block, options?)`                 | Walk parents while align is `full`                         |
 
 ### Block renderer plugin
 
-| Export | Role |
-|--------|------|
-| `blockContainerPlugin({ … })` | CloakWP plugin: inject / wrap / none + layout-slot descent |
-| `resolveBlockContainerDecision(block, props?, options?)` | Shared strategy/size resolution (meta + filters) |
-| Types: `ContainerStrategy`, `ContainerSize`, `ContainerMeta`, `BlockContainerDecision`, `ComposeLayoutSlotFilter` | Block meta and filter typing |
+| Export                                                                                                            | Role                                                       |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `blockContainerPlugin({ … })`                                                                                     | CloakWP plugin: inject / wrap / none + layout-slot descent |
+| `resolveBlockContainerDecision(block, props?, options?)`                                                          | Shared strategy/size resolution (meta + filters)           |
+| Types: `ContainerStrategy`, `ContainerSize`, `ContainerMeta`, `BlockContainerDecision`, `ComposeLayoutSlotFilter` | Block meta and filter typing                               |
 
 Plugin options: `wrapperComponent`, `getContainerProps`, `childrenProp`, `defaultSize`, `defaultStrategy`, `groupWrap` (default `true`), `hooks.filters` (`containerStrategy`, `containerSize`, `composeLayoutSlot`).
 
 ### Layout slots & subdivision
 
-| Export | Role |
-|--------|------|
-| `ROOT_LAYOUT_SLOT` | Starting slot before any measure |
-| `composeLayoutSlot(parent, block, decision)` | Apply this block's measure contribution |
-| `getLayoutSlot(block, container)` | Read composed slot (+ leaf flexSize); returns `LayoutSlotApi` |
-| `bindLayoutSlot(slot, container)` | Bind a raw slot to `contentWidthAt` |
-| `layoutSlotContentWidthAt(slot, breakpoint, container)` | CSS length for a slot at a breakpoint |
-| `applyCoreBlockLayoutSlot` | Default `composeLayoutSlot` filter (columns then flex) |
-| `applyColumnLayoutSlot` / `columnFractionByBreakpoint` | `core/column` share of row |
-| `applyFlexItemLayoutSlot` / `withFlexItemWidthFraction` | Horizontal flex `%` width |
-| `isHorizontalFlexLayout` / `parseFlexSizeFraction` / `resolveFlexItemWidthFraction` | Flex-item parsing |
-| `getColumnWidths` / `getColumnsLayout` | WP columns → `%` widths / grid spans |
+| Export                                                                              | Role                                                          |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `ROOT_LAYOUT_SLOT`                                                                  | Starting slot before any measure                              |
+| `composeLayoutSlot(parent, block, decision)`                                        | Apply this block's measure contribution                       |
+| `getLayoutSlot(block, container)`                                                   | Read composed slot (+ leaf flexSize); returns `LayoutSlotApi` |
+| `bindLayoutSlot(slot, container)`                                                   | Bind a raw slot to `contentWidthAt`                           |
+| `layoutSlotContentWidthAt(slot, breakpoint, container)`                             | CSS length for a slot at a breakpoint                         |
+| `applyCoreBlockLayoutSlot`                                                          | Default `composeLayoutSlot` filter (columns then flex)        |
+| `applyColumnLayoutSlot` / `columnFractionByBreakpoint`                              | `core/column` share of row                                    |
+| `applyFlexItemLayoutSlot` / `withFlexItemWidthFraction`                             | Horizontal flex `%` width                                     |
+| `isHorizontalFlexLayout` / `parseFlexSizeFraction` / `resolveFlexItemWidthFraction` | Flex-item parsing                                             |
+| `getColumnWidths` / `getColumnsLayout`                                              | WP columns → `%` widths / grid spans                          |
 
 ### Image widths (align-only)
 
-| Export | Role |
-|--------|------|
+| Export                                                          | Role                                                 |
+| --------------------------------------------------------------- | ---------------------------------------------------- |
 | `getContainerWidthExpr(align, breakpoint, container, options?)` | CSS length from align/size + breakpoint (no nesting) |
 
 ### Editor sync
 
-| Export | Role |
-|--------|------|
-| `containerThemeJsonLayout` / `createContainerThemeJsonLayout(options?)` | `theme.json` `settings.layout` helpers |
-| `createWpEditorContainerPlugin({ applyClasses, … })` | Optional Tailwind plugin: sidebar `--cntr-vw` + align rules via your class→CSS adapter |
-| `wpAlignContainerRules` / `createWpAlignContainerRules({ wideClassName?, alignFlushSize? })` | Align → measure-class map (use directly or via the plugin) |
-| `@cloakwp/container/editor.css` | Preview iframe CSS (expects `.gutenberg-preview` on `body`) |
+| Export                                                                                       | Role                                                                                   |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `containerThemeJsonLayout` / `createContainerThemeJsonLayout(options?)`                      | `theme.json` `settings.layout` helpers                                                 |
+| `createWpEditorContainerPlugin({ applyClasses, … })`                                         | Optional Tailwind plugin: sidebar `--cntr-vw` + align rules via your class→CSS adapter |
+| `wpAlignContainerRules` / `createWpAlignContainerRules({ wideClassName?, alignFlushSize? })` | Align → measure-class map (use directly or via the plugin)                             |
+| `@cloakwp/container/editor.css`                                                              | Preview iframe CSS (expects `.gutenberg-preview` on `body`)                            |
 
 ## License
 

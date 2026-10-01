@@ -86,9 +86,8 @@ export const layoutSlotContentWidthAt = (
   container: Pick<ContainerInstance, "contentBoxWidth" | "width">,
 ): string => {
   const fraction = Number(
-    slot.fractionByBreakpoint[
-      breakpoint as keyof BreakpointOptions<number>
-    ] ?? 1,
+    slot.fractionByBreakpoint[breakpoint as keyof BreakpointOptions<number>] ??
+      1,
   );
 
   let base = baseWidthExpr(slot, breakpoint, container);
@@ -213,8 +212,5 @@ export const getLayoutSlot = (
     decision,
   );
 
-  return bindLayoutSlot(
-    withFlexItemWidthFraction(measured, block),
-    container,
-  );
+  return bindLayoutSlot(withFlexItemWidthFraction(measured, block), container);
 };

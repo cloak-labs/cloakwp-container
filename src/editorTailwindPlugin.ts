@@ -78,8 +78,7 @@ export const createWpEditorContainerPlugin = (options: {
       {
         ".is-sidebar-opened": {
           "--sidebar-w": sidebarWidth,
-          "--cntr-vw":
-            "calc(100vw - var(--sidebar-w) - var(--scrollbar-w))",
+          "--cntr-vw": "calc(100vw - var(--sidebar-w) - var(--scrollbar-w))",
         },
       },
       applyClasses(

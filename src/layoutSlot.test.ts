@@ -32,10 +32,14 @@ const container = defineContainer({
 
 describe("composeLayoutSlot", () => {
   it("composes a root measure for children", () => {
-    const slot = composeLayoutSlot(ROOT_LAYOUT_SLOT, { name: "core/group" }, {
-      strategy: "inject",
-      size: "default",
-    });
+    const slot = composeLayoutSlot(
+      ROOT_LAYOUT_SLOT,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "default",
+      },
+    );
 
     assert.equal(slot.measureSize, "default");
     assert.equal(slot.subtractPad, true);
@@ -50,14 +54,22 @@ describe("composeLayoutSlot", () => {
   });
 
   it("collapses pad for nested measures and clamps to parent", () => {
-    const outer = composeLayoutSlot(ROOT_LAYOUT_SLOT, { name: "core/group" }, {
-      strategy: "inject",
-      size: "default",
-    });
-    const inner = composeLayoutSlot(outer, { name: "core/group" }, {
-      strategy: "inject",
-      size: "wide",
-    });
+    const outer = composeLayoutSlot(
+      ROOT_LAYOUT_SLOT,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "default",
+      },
+    );
+    const inner = composeLayoutSlot(
+      outer,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "wide",
+      },
+    );
 
     assert.equal(inner.measureSize, "wide");
     assert.equal(inner.subtractPad, false);
@@ -70,14 +82,22 @@ describe("composeLayoutSlot", () => {
   });
 
   it("passes through unchanged when strategy is none", () => {
-    const measure = composeLayoutSlot(ROOT_LAYOUT_SLOT, { name: "core/columns" }, {
-      strategy: "inject",
-      size: "default",
-    });
-    const slot = composeLayoutSlot(measure, { name: "core/column" }, {
-      strategy: "none",
-      size: "default",
-    });
+    const measure = composeLayoutSlot(
+      ROOT_LAYOUT_SLOT,
+      { name: "core/columns" },
+      {
+        strategy: "inject",
+        size: "default",
+      },
+    );
+    const slot = composeLayoutSlot(
+      measure,
+      { name: "core/column" },
+      {
+        strategy: "none",
+        size: "default",
+      },
+    );
 
     assert.equal(slot, measure);
   });
@@ -90,10 +110,14 @@ describe("composeLayoutSlot", () => {
       fractionByBreakpoint: { mobile: 1, laptop: 0.5 },
     };
 
-    const nested = composeLayoutSlot(fractioned, { name: "core/group" }, {
-      strategy: "inject",
-      size: "default",
-    });
+    const nested = composeLayoutSlot(
+      fractioned,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "default",
+      },
+    );
 
     assert.equal(nested.fractionByBreakpoint.mobile, 1);
     assert.ok(nested.clampSlot);
@@ -101,15 +125,23 @@ describe("composeLayoutSlot", () => {
   });
 
   it("keeps ancestor measure when nested full sits inside a padded slot", () => {
-    const wide = composeLayoutSlot(ROOT_LAYOUT_SLOT, { name: "core/columns" }, {
-      strategy: "wrap",
-      size: "wide",
-    });
+    const wide = composeLayoutSlot(
+      ROOT_LAYOUT_SLOT,
+      { name: "core/columns" },
+      {
+        strategy: "wrap",
+        size: "wide",
+      },
+    );
 
-    const nestedFull = composeLayoutSlot(wide, { name: "core/group" }, {
-      strategy: "inject",
-      size: "full",
-    });
+    const nestedFull = composeLayoutSlot(
+      wide,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "full",
+      },
+    );
 
     assert.equal(nestedFull, wide);
     assert.equal(nestedFull.measureSize, "wide");
@@ -129,10 +161,14 @@ describe("composeLayoutSlot", () => {
       fractionByBreakpoint: { mobile: 1, laptop: 0.5 },
     };
 
-    const nestedFull = composeLayoutSlot(fractioned, { name: "core/group" }, {
-      strategy: "inject",
-      size: "full",
-    });
+    const nestedFull = composeLayoutSlot(
+      fractioned,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "full",
+      },
+    );
 
     assert.equal(nestedFull, fractioned);
     assert.equal(nestedFull.measureSize, "wide");
@@ -147,10 +183,14 @@ describe("composeLayoutSlot", () => {
   });
 
   it("still treats root-level full as viewport-full", () => {
-    const slot = composeLayoutSlot(ROOT_LAYOUT_SLOT, { name: "core/group" }, {
-      strategy: "inject",
-      size: "full",
-    });
+    const slot = composeLayoutSlot(
+      ROOT_LAYOUT_SLOT,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "full",
+      },
+    );
 
     assert.equal(slot.measureSize, "full");
     assert.equal(slot.padApplied, false);
@@ -413,10 +453,14 @@ describe("coreBlockLayoutSlot", () => {
       parentSlot: columnsMeasure,
     });
 
-    const groupSlot = composeLayoutSlot(columnSlot, { name: "core/group" }, {
-      strategy: "inject",
-      size: "full",
-    });
+    const groupSlot = composeLayoutSlot(
+      columnSlot,
+      { name: "core/group" },
+      {
+        strategy: "inject",
+        size: "full",
+      },
+    );
 
     const imageBlock = {
       name: "core/image",

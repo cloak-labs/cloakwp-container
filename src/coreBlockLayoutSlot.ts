@@ -112,5 +112,4 @@ export const applyFlexItemLayoutSlot: ComposeLayoutSlotFilter = (
 export const applyCoreBlockLayoutSlot: ComposeLayoutSlotFilter = (
   slot,
   ctx,
-): LayoutSlot =>
-  applyFlexItemLayoutSlot(applyColumnLayoutSlot(slot, ctx), ctx);
+): LayoutSlot => applyFlexItemLayoutSlot(applyColumnLayoutSlot(slot, ctx), ctx);

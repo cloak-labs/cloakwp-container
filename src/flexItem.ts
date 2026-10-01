@@ -35,9 +35,7 @@ export type BlockWithFlexItem = {
  * True when a WP layout config lays out children in a horizontal flex row.
  * Vertical flex must not affect width fractions (`flexSize` then sizes height).
  */
-export const isHorizontalFlexLayout = (
-  layout?: FlexLayout | null,
-): boolean => {
+export const isHorizontalFlexLayout = (layout?: FlexLayout | null): boolean => {
   if (!layout) return false;
   if (layout.orientation === "vertical") return false;
   return layout.orientation === "horizontal" || layout.type === "flex";
@@ -66,9 +64,7 @@ export const parseFlexSizeFraction = (
 export const resolveFlexItemWidthFraction = (
   block?: BlockWithFlexItem | null,
 ): number | null => {
-  const fraction = parseFlexSizeFraction(
-    block?.attrs?.style?.layout?.flexSize,
-  );
+  const fraction = parseFlexSizeFraction(block?.attrs?.style?.layout?.flexSize);
   if (fraction == null) return null;
 
   if (!isHorizontalFlexLayout(block?.context?.parent?.attrs?.layout)) {

@@ -47,7 +47,10 @@ export type GetCntrClassOptions = {
 export const alignToContainerSize = (
   align?: string | null,
   className?: string | null,
-  fallbackOrOptions: ContainerSizeName | string | AlignToSizeOptions = "default",
+  fallbackOrOptions:
+    | ContainerSizeName
+    | string
+    | AlignToSizeOptions = "default",
 ): string => {
   const options: AlignToSizeOptions =
     typeof fallbackOrOptions === "object" &&
@@ -128,10 +131,7 @@ type BlockWithAlignContext = {
   context?: { parent?: BlockWithAlignContext };
 };
 
-const normalizeAlign = (
-  align?: string,
-  known?: Set<string>,
-): string => {
+const normalizeAlign = (align?: string, known?: Set<string>): string => {
   if (!align) return "full";
   if (known && !known.has(align)) return "full";
   return align;
