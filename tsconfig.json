@@ -14,7 +14,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "moduleDetection": "auto"
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts"]

@@ -32,7 +32,8 @@ const baseWidthExpr = (slot, breakpoint, container) => {
  * optionally clamped to an ancestor slot).
  */
 export const layoutSlotContentWidthAt = (slot, breakpoint, container) => {
-    const fraction = Number(slot.fractionByBreakpoint[breakpoint] ?? 1);
+    const fraction = Number(slot.fractionByBreakpoint[breakpoint] ??
+        1);
     let base = baseWidthExpr(slot, breakpoint, container);
     if (slot.clampSlot) {
         const ceiling = layoutSlotContentWidthAt(slot.clampSlot, breakpoint, container);
