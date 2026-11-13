@@ -10,11 +10,11 @@ import { getLayoutSlot } from "./layoutSlot";
  */
 export const getLayoutSlotImageSizes = (block, itemWidths, container, options) => {
     const { fallbackWidth = 100 } = options ?? {};
-    const { contentWidthAt, isFull } = getLayoutSlot(block, container);
+    const { contentWidthAt } = getLayoutSlot(block, container);
     const widths = fillMissingBreakpoints(Object.fromEntries(Object.entries(itemWidths).map(([bp, w]) => [bp, String(w)])), String(fallbackWidth));
     return getImageSizesFromBreakpointWidths(widths, {
         filter: (itemWidth, { breakpoint }) => {
-            if (isFull)
+            if (contentWidthAt(breakpoint) === "100vw")
                 return `${itemWidth}vw`;
             return `calc((${contentWidthAt(breakpoint)}) * ${itemWidth} / 100)`;
         },

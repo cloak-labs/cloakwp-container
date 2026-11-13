@@ -30,7 +30,7 @@ export const getLayoutSlotImageSizes = (
   options?: GetLayoutSlotImageSizesOptions,
 ): string => {
   const { fallbackWidth = 100 } = options ?? {};
-  const { contentWidthAt, isFull } = getLayoutSlot(block, container);
+  const { contentWidthAt } = getLayoutSlot(block, container);
 
   const widths = fillMissingBreakpoints(
     Object.fromEntries(
@@ -41,7 +41,7 @@ export const getLayoutSlotImageSizes = (
 
   return getImageSizesFromBreakpointWidths(widths, {
     filter: (itemWidth, { breakpoint }) => {
-      if (isFull) return `${itemWidth}vw`;
+      if (contentWidthAt(breakpoint) === "100vw") return `${itemWidth}vw`;
       return `calc((${contentWidthAt(breakpoint)}) * ${itemWidth} / 100)`;
     },
   });

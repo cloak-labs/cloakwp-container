@@ -1,4 +1,6 @@
 import { alignToContainerSize } from "./align";
+import { withHorizontalPadding } from "./horizontalPadding";
+import { fillMissingBreakpoints } from "@cloakui/responsive";
 import { composeLayoutSlot } from "./composeLayoutSlot";
 import { withFlexItemWidthFraction } from "./flexItem";
 /** Root slot before any measure/column contribution. */
@@ -32,14 +34,26 @@ const baseWidthExpr = (slot, breakpoint, container) => {
  * optionally clamped to an ancestor slot).
  */
 export const layoutSlotContentWidthAt = (slot, breakpoint, container) => {
-    const fraction = Number(slot.fractionByBreakpoint[breakpoint] ??
-        1);
-    let base = baseWidthExpr(slot, breakpoint, container);
+    const fraction = Number(fillMissingBreakpoints(slot.fractionByBreakpoint, 1)[breakpoint] ?? 1);
+    let base = slot.widthBasis
+        ? layoutSlotContentWidthAt(slot.widthBasis, breakpoint, container)
+        : baseWidthExpr(slot, breakpoint, container);
+    const padding = slot.paddingByBreakpoint?.[breakpoint];
+    if (padding) {
+        const bp = semanticToContainerBreakpoint[breakpoint] ?? breakpoint;
+        const lengths = padding
+            .filter((value) => value !== "0px" && value !== "0rem")
+            .map((value) => value.startsWith("gutter:")
+            ? `((100vw - ${container.contentBoxWidth(value.slice(7), bp)}) / 2)`
+            : value);
+        if (lengths.length)
+            base = `max(0px, calc(${base} - ${lengths.join(" - ")}))`;
+    }
     if (slot.clampSlot) {
         const ceiling = layoutSlotContentWidthAt(slot.clampSlot, breakpoint, container);
         base = `min(${base}, ${ceiling})`;
     }
-    if (slot.measureSize === "full") {
+    if (base === "100vw") {
         return fraction === 1 ? base : `${fraction * 100}vw`;
     }
     return fraction === 1 ? base : `calc((${base}) * ${fraction})`;
@@ -95,5 +109,5 @@ export const getLayoutSlot = (block, container) => {
     const parentSlot = fromAncestors ?? ROOT_LAYOUT_SLOT;
     const decision = resolveOwnContainerDecision(block, !!fromAncestors);
     const measured = composeLayoutSlot(parentSlot, block, decision);
-    return bindLayoutSlot(withFlexItemWidthFraction(measured, block), container);
+    return bindLayoutSlot(withHorizontalPadding(withFlexItemWidthFraction(measured, block), block?.attrs?.className), container);
 };

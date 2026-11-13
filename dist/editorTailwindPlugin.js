@@ -22,6 +22,16 @@ export const createWpAlignContainerRules = (options = {}) => {
         ".is-layout-constrained > .alignleft": `${startAlign} float-none`,
         ".is-layout-flow > .alignright": `${endAlign} float-none`,
         ".is-layout-constrained > .alignright": `${endAlign} float-none`,
+        // Nested blocks already sit inside a measure. Drop the page-edge gutter
+        // and the inner measure pad so alignleft lines up with alignwide siblings.
+        // Root blocks stay direct children of `.is-root-container` and keep both.
+        // Mirrors `.cntr* .align-start-* { margin-inline-start: 0 }` and
+        // `.cntr* .cntr* { padding-inline: 0 }`, which never match here because
+        // the editor has `alignwide` / `alignleft` rather than those classes.
+        ".block-editor-block-list__layout:not(.is-root-container) > .alignleft": "ms-0",
+        ".block-editor-block-list__layout:not(.is-root-container) > .alignright": "me-0",
+        ".block-editor-block-list__layout:not(.is-root-container) > .alignwide": "[padding-inline:0]",
+        ".block-editor-block-list__layout:not(.is-root-container) > .alignfull": "[padding-inline:0]",
     };
 };
 /** Default align → class map (`alignwide` → `cntr-wide`, left → flush to wide). */

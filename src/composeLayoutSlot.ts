@@ -38,7 +38,7 @@ export const composeLayoutSlot = (
     // `.cntr-full` is `width: 100%` — it fills the current slot and does not
     // break out of an ancestor measure or column. Only treat as viewport-full
     // when we are still at the root (no padded measure / no fraction yet).
-    if (slot.padApplied || hasSubdivision) {
+    if (slot.padApplied || hasSubdivision || !!slot.widthBasis) {
       return slot;
     }
 
@@ -50,7 +50,7 @@ export const composeLayoutSlot = (
     };
   }
 
-  const shouldClamp = slot.padApplied || hasSubdivision;
+  const shouldClamp = slot.padApplied || hasSubdivision || !!slot.widthBasis;
 
   return {
     measureSize,

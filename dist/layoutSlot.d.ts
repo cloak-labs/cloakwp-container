@@ -23,6 +23,9 @@ export type LayoutSlot = {
      * clamp to this slot's width.
      */
     clampSlot?: LayoutSlot;
+    /** Parent content box before this element’s padding and subsequent subdivisions. */
+    widthBasis?: LayoutSlot;
+    paddingByBreakpoint?: BreakpointOptions<[string, string]>;
 };
 export type LayoutSlotApi = {
     measureSize: string;

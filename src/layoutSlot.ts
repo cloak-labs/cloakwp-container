@@ -1,6 +1,8 @@
 import type { ContainerInstance } from "@cloakui/container";
 import type { BreakpointOptions } from "@cloakui/responsive";
 import { alignToContainerSize } from "./align";
+import { withHorizontalPadding } from "./horizontalPadding";
+import { fillMissingBreakpoints } from "@cloakui/responsive";
 import { composeLayoutSlot } from "./composeLayoutSlot";
 import { withFlexItemWidthFraction } from "./flexItem";
 import type { BlockContainerDecision } from "./resolveBlockContainerDecision";
@@ -29,6 +31,9 @@ export type LayoutSlot = {
    * clamp to this slot's width.
    */
   clampSlot?: LayoutSlot;
+  /** Parent content box before this element’s padding and subsequent subdivisions. */
+  widthBasis?: LayoutSlot;
+  paddingByBreakpoint?: BreakpointOptions<[string, string]>;
 };
 
 export type LayoutSlotApi = {
@@ -86,11 +91,28 @@ export const layoutSlotContentWidthAt = (
   container: Pick<ContainerInstance, "contentBoxWidth" | "width">,
 ): string => {
   const fraction = Number(
-    slot.fractionByBreakpoint[breakpoint as keyof BreakpointOptions<number>] ??
-      1,
+    fillMissingBreakpoints(slot.fractionByBreakpoint, 1)[
+      breakpoint as keyof BreakpointOptions<number>
+    ] ?? 1,
   );
 
-  let base = baseWidthExpr(slot, breakpoint, container);
+  let base = slot.widthBasis
+    ? layoutSlotContentWidthAt(slot.widthBasis, breakpoint, container)
+    : baseWidthExpr(slot, breakpoint, container);
+  const padding =
+    slot.paddingByBreakpoint?.[breakpoint as LayoutSlotBreakpoint];
+  if (padding) {
+    const bp = semanticToContainerBreakpoint[breakpoint] ?? breakpoint;
+    const lengths = padding
+      .filter((value) => value !== "0px" && value !== "0rem")
+      .map((value) =>
+        value.startsWith("gutter:")
+          ? `((100vw - ${container.contentBoxWidth(value.slice(7), bp)}) / 2)`
+          : value,
+      );
+    if (lengths.length)
+      base = `max(0px, calc(${base} - ${lengths.join(" - ")}))`;
+  }
 
   if (slot.clampSlot) {
     const ceiling = layoutSlotContentWidthAt(
@@ -101,7 +123,7 @@ export const layoutSlotContentWidthAt = (
     base = `min(${base}, ${ceiling})`;
   }
 
-  if (slot.measureSize === "full") {
+  if (base === "100vw") {
     return fraction === 1 ? base : `${fraction * 100}vw`;
   }
 
@@ -212,5 +234,11 @@ export const getLayoutSlot = (
     decision,
   );
 
-  return bindLayoutSlot(withFlexItemWidthFraction(measured, block), container);
+  return bindLayoutSlot(
+    withHorizontalPadding(
+      withFlexItemWidthFraction(measured, block),
+      block?.attrs?.className,
+    ),
+    container,
+  );
 };

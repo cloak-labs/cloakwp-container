@@ -1,4 +1,5 @@
 import { fillMissingBreakpoints, } from "@cloakui/responsive";
+import { withHorizontalPadding } from "./horizontalPadding";
 import { getColumnsLayout } from "./columnsLayout";
 import { withFlexItemWidthFraction } from "./flexItem";
 const multiplyFractions = (parent, child) => {
@@ -62,4 +63,4 @@ export const applyFlexItemLayoutSlot = (slot, { block }) => withFlexItemWidthFra
  * Default WP core subdivision: columns then flex-item width.
  * Used as `blockContainerPlugin`'s default `composeLayoutSlot` filter.
  */
-export const applyCoreBlockLayoutSlot = (slot, ctx) => applyFlexItemLayoutSlot(applyColumnLayoutSlot(slot, ctx), ctx);
+export const applyCoreBlockLayoutSlot = (slot, ctx) => withHorizontalPadding(applyFlexItemLayoutSlot(applyColumnLayoutSlot(slot, ctx), ctx), ctx.block.attrs?.className);

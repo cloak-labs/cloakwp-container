@@ -3,6 +3,7 @@ import {
   type BreakpointOptions,
 } from "@cloakui/responsive";
 import type { ComposeLayoutSlotFilter } from "./blockContainerPlugin";
+import { withHorizontalPadding } from "./horizontalPadding";
 import { getColumnsLayout } from "./columnsLayout";
 import { withFlexItemWidthFraction } from "./flexItem";
 import type { LayoutSlot } from "./layoutSlot";
@@ -112,4 +113,8 @@ export const applyFlexItemLayoutSlot: ComposeLayoutSlotFilter = (
 export const applyCoreBlockLayoutSlot: ComposeLayoutSlotFilter = (
   slot,
   ctx,
-): LayoutSlot => applyFlexItemLayoutSlot(applyColumnLayoutSlot(slot, ctx), ctx);
+): LayoutSlot =>
+  withHorizontalPadding(
+    applyFlexItemLayoutSlot(applyColumnLayoutSlot(slot, ctx), ctx),
+    ctx.block.attrs?.className,
+  );

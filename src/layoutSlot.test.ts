@@ -589,3 +589,60 @@ describe("getLayoutSlotImageSizes", () => {
     assert.doesNotMatch(sizes, /calc\(/);
   });
 });
+
+// Regressions: full-width blocks with gutter utilities, followed by a column
+// subdivision, must subtract padding before applying the child's percentage.
+describe("gutter and subdivided image slots", () => {
+  it("accounts for responsive gutter utilities on full-width image grids", () => {
+    const sizes = getLayoutSlotImageSizes(
+      { attrs: { align: "full", className: "ps-2 md:px-gutter-wide" } },
+      { mobile: 20 },
+      container,
+    );
+    assert.match(sizes, /0\.5rem/);
+    assert.match(sizes, /72rem/);
+    assert.match(sizes, /76rem/);
+    assert.notEqual(sizes, "20vw");
+  });
+  it("keeps a full-width column fraction when sizing its images", () => {
+    const sizes = getLayoutSlotImageSizes(
+      {
+        context: {
+          fromAncestors: {
+            layoutSlot: {
+              ...ROOT_LAYOUT_SLOT,
+              fractionByBreakpoint: { mobile: 0.5 },
+            },
+          },
+        },
+      },
+      { mobile: 20 },
+      container,
+    );
+    assert.match(sizes, /50vw/);
+    assert.match(sizes, /20 \/ 100/);
+  });
+  it("inherits responsive fractions through larger breakpoints", () => {
+    const slot = bindLayoutSlot(
+      {
+        ...ROOT_LAYOUT_SLOT,
+        fractionByBreakpoint: { mobile: 1, tabletWide: 0.5 },
+      },
+      container,
+    );
+    assert.equal(slot.contentWidthAt("desktopWide"), "50vw");
+  });
+  it("subtracts a parent's gutter before subdividing into columns", () => {
+    const block = {
+      name: "core/group",
+      attrs: { className: "pl-gutter-wide pr-2" },
+    };
+    const padded = applyCoreBlockLayoutSlot(ROOT_LAYOUT_SLOT, { block } as any);
+    const half = { ...padded, fractionByBreakpoint: { mobile: 0.5 } };
+    const width = bindLayoutSlot(half, container).contentWidthAt("desktop");
+    assert.match(width, /76rem/);
+    assert.match(width, /0\.5rem/);
+    assert.match(width, /\* 0\.5\)/);
+    assert.notEqual(width, "50vw");
+  });
+});
